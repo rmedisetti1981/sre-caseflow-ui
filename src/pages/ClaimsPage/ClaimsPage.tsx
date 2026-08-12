@@ -278,6 +278,7 @@ const ClaimsPage = () => {
         }}
         pageSizeOptions={[25, 50, 100]}
         disableRowSelectionOnClick
+        disableColumnFilter
         />
       </Box>
     </Box>

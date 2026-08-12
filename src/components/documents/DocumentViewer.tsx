@@ -15,12 +15,17 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 interface DocumentViewerProps {
   documentId: string;
+  fileName: string;
+  pageCount: number;
+  fileSize: number;
 }
 
-const TOTAL_PAGES = 25;
 
 const DocumentViewer = ({
   documentId,
+  fileName,
+  pageCount,
+  fileSize,
 }: DocumentViewerProps) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -34,7 +39,7 @@ const DocumentViewer = ({
 
   const handleNextPage = () => {
     setCurrentPage((previousPage) =>
-      Math.min(TOTAL_PAGES, previousPage + 1),
+      Math.min(pageCount, previousPage + 1),
     );
   };
 
@@ -71,16 +76,24 @@ const DocumentViewer = ({
       >
         {/* Document information */}
         <Box>
-          <Typography variant="h6">
-            Document Viewer
-          </Typography>
+            <Typography variant="h6">
+            {fileName}
+            </Typography>
 
-          <Typography
+            <Typography
             variant="body2"
             color="text.secondary"
-          >
-            Document: {documentId}
-          </Typography>
+            >
+            Document ID: {documentId}
+            </Typography>
+
+            <Typography
+            variant="body2"
+            color="text.secondary"
+            >
+            {pageCount} pages •{' '}
+            {(fileSize / (1024 * 1024)).toFixed(0)} MB
+            </Typography>
         </Box>
 
         {/* Page controls */}
@@ -105,13 +118,13 @@ const DocumentViewer = ({
               textAlign: 'center',
             }}
           >
-            Page {currentPage} / {TOTAL_PAGES}
+            Page {currentPage} / {pageCount}
           </Typography>
 
           <IconButton
             onClick={handleNextPage}
             disabled={
-              currentPage === TOTAL_PAGES
+              currentPage === pageCount
             }
             aria-label="Next page"
           >
@@ -221,14 +234,14 @@ const DocumentViewer = ({
         </Button>
 
         <Typography>
-          {currentPage} / {TOTAL_PAGES}
+          {currentPage} / {pageCount}
         </Typography>
 
         <Button
           endIcon={<ChevronRightIcon />}
           onClick={handleNextPage}
           disabled={
-            currentPage === TOTAL_PAGES
+            currentPage === pageCount
           }
         >
           Next

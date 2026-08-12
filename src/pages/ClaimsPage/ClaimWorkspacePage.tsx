@@ -132,6 +132,9 @@ const ClaimWorkspacePage = () => {
         {selectedDocument ? (
           <DocumentViewer
             documentId={selectedDocument.id}
+            fileName={selectedDocument.fileName}
+            pageCount={selectedDocument.pageCount}
+            fileSize={selectedDocument.fileSize}
           />
         ) : (
           <Typography color="text.secondary">

@@ -27,21 +27,57 @@ const DocumentViewer = ({
   pageCount,
   fileSize,
 }: DocumentViewerProps) => {
+
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+
+  const [pageError, setPageError] = useState('');  
+
   const [zoom, setZoom] = useState(100);
+  
+    const loadPage = async (page: number) => {
+    setIsLoadingPage(true);
+    setPageError('');
 
-  const handlePreviousPage = () => {
-    setCurrentPage((previousPage) =>
-      Math.max(1, previousPage - 1),
-    );
+    try {
+      // Simulate an API request for a single page.
+      // In production this would call:
+      // GET /documents/{documentId}/pages/{page}
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, 500),
+      );
+
+      setCurrentPage(page);
+    } catch (error) {
+      console.error(
+        'Failed to load document page:',
+        error,
+      );
+
+      setPageError(
+        'Unable to load this page. Please try again.',
+      );
+    } finally {
+      setIsLoadingPage(false);
+    }
   };
 
-  const handleNextPage = () => {
-    setCurrentPage((previousPage) =>
-      Math.min(pageCount, previousPage + 1),
-    );
-  };
+    const handlePreviousPage = () => {
+    if (currentPage > 1 && !isLoadingPage) {
+        loadPage(currentPage - 1);
+    }
+    };
+
+    const handleNextPage = () => {
+    if (
+        currentPage < pageCount &&
+        !isLoadingPage
+    ) {
+        loadPage(currentPage + 1);
+    }
+    };
 
   const handleZoomOut = () => {
     setZoom((previousZoom) =>
@@ -106,7 +142,7 @@ const DocumentViewer = ({
         >
           <IconButton
             onClick={handlePreviousPage}
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || isLoadingPage}
             aria-label="Previous page"
           >
             <ChevronLeftIcon />
@@ -124,7 +160,7 @@ const DocumentViewer = ({
           <IconButton
             onClick={handleNextPage}
             disabled={
-              currentPage === pageCount
+              currentPage === pageCount || isLoadingPage
             }
             aria-label="Next page"
           >
@@ -207,10 +243,30 @@ const DocumentViewer = ({
             Page {currentPage}
           </Typography>
 
-          <Typography>
+        {isLoadingPage ? (
+        <Typography color="text.secondary">
+            Loading page {currentPage}...
+        </Typography>
+        ) : pageError ? (
+        <Box sx={{ textAlign: 'center' }}>
+            <Typography color="error">
+            {pageError}
+            </Typography>
+
+            <Button
+            sx={{ mt: 2 }}
+            variant="outlined"
+            onClick={() => loadPage(currentPage)}
+            >
+            Retry
+            </Button>
+        </Box>
+        ) : (
+        <Typography>
             Document content will be rendered
             here.
-          </Typography>
+        </Typography>
+        )}
         </Box>
       </Box>
 
@@ -228,7 +284,7 @@ const DocumentViewer = ({
         <Button
           startIcon={<ChevronLeftIcon />}
           onClick={handlePreviousPage}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || isLoadingPage}
         >
           Previous
         </Button>
@@ -241,7 +297,7 @@ const DocumentViewer = ({
           endIcon={<ChevronRightIcon />}
           onClick={handleNextPage}
           disabled={
-            currentPage === pageCount
+            currentPage === pageCount || isLoadingPage
           }
         >
           Next

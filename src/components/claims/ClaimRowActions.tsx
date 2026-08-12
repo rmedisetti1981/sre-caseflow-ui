@@ -30,8 +30,12 @@ import type {
   ClaimStatus,
 } from '../../features/claims/claim.types';
 
+import type { User } from '../../features/auth/types';
+import { hasPermission } from '../../features/auth/permissions';
+
 interface ClaimRowActionsProps {
   claim: Claim;
+  user: User;
 }
 
 const AGENTS = [
@@ -44,7 +48,24 @@ const AGENTS = [
 
 const ClaimRowActions = ({
   claim,
+  user,
 }: ClaimRowActionsProps) => {
+
+  const canEdit = hasPermission(
+    user,
+    'CLAIM_EDIT',
+  );
+
+  const canDelete = hasPermission(
+    user,
+    'CLAIM_DELETE',
+  );
+
+  const canAssign = hasPermission(
+    user,
+    'CLAIM_ASSIGN',
+  );
+
   const [editOpen, setEditOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -162,44 +183,50 @@ const ClaimRowActions = ({
           gap: 0.5,
         }}
       >
-        <Button
-          size="small"
-          title="Edit claim"
-          onClick={() => {
-            setErrorMessage('');
-            setCustomerName(claim.customerName);
-            setClaimStatus(claim.status);
-            setEditOpen(true);
-          }}
-        >
-          <EditIcon fontSize="small" />
-        </Button>
+        {canEdit && (
+          <Button
+            size="small"
+            title="Edit claim"
+            onClick={() => {
+              setErrorMessage('');
+              setCustomerName(claim.customerName);
+              setClaimStatus(claim.status);
+              setEditOpen(true);
+            }}
+          >
+            <EditIcon fontSize="small" />
+          </Button>
+        )}
 
-        <Button
-          size="small"
-          title="Assign claim"
-          onClick={() => {
-            setErrorMessage('');
-            setAssignedTo(
-              claim.assignedTo ?? '',
-            );
-            setAssignOpen(true);
-          }}
-        >
-          <AssignmentIndIcon fontSize="small" />
-        </Button>
+        {canAssign && (
+          <Button
+            size="small"
+            title="Assign claim"
+            onClick={() => {
+              setErrorMessage('');
+              setAssignedTo(
+                claim.assignedTo ?? '',
+              );
+              setAssignOpen(true);
+            }}
+          >
+            <AssignmentIndIcon fontSize="small" />
+          </Button>
+        )}
 
-        <Button
-          size="small"
-          color="error"
-          title="Delete claim"
-          onClick={() => {
-            setErrorMessage('');
-            setDeleteOpen(true);
-          }}
-        >
-          <DeleteIcon fontSize="small" />
-        </Button>
+        {canDelete && (
+          <Button
+            size="small"
+            color="error"
+            title="Delete claim"
+            onClick={() => {
+              setErrorMessage('');
+              setDeleteOpen(true);
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </Button>
+        )}
       </Box>
 
       {/* Edit Claim Dialog */}

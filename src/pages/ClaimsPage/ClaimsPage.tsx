@@ -47,7 +47,9 @@ const ClaimNumberCell = ({
   );
 };
 
-const columns: GridColDef[] = [
+const createColumns = (
+  currentUser: User,
+): GridColDef[] => [
   {
     field: 'claimNumber',
     headerName: 'Claim Number',
@@ -101,6 +103,7 @@ const columns: GridColDef[] = [
   renderCell: (params) => (
     <ClaimRowActions
       claim={params.row}
+      user={currentUser}
     />
   ),
 },
@@ -111,6 +114,8 @@ const ClaimsPage = () => {
   const storedUser = sessionStorage.getItem('caseflow-user');
 
   const currentUser: User = storedUser ? JSON.parse(storedUser) : regularUser;
+
+  const columns = createColumns(currentUser);
 
   // User-entered search value
   const [search, setSearch] = useState('');

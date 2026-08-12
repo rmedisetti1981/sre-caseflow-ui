@@ -19,6 +19,7 @@ import {
 import { useGetClaimsQuery } from '../../state/server/endpoints/claimsApi';
 
 import type { ClaimStatus } from '../../features/claims/claim.types';
+import ClaimRowActions from '../../components/claims/ClaimRowActions';
 
 const columns: GridColDef[] = [
   {
@@ -58,6 +59,19 @@ const columns: GridColDef[] = [
     flex: 0.8,
     minWidth: 120,
   },
+  {
+  field: 'actions',
+  headerName: 'Actions',
+  type: 'actions',
+  flex: 1.2,
+  sortable: false,
+  filterable: false,
+  renderCell: (params) => (
+    <ClaimRowActions
+      claim={params.row}
+    />
+  ),
+},
 ];
 
 const ClaimsPage = () => {

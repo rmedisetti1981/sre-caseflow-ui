@@ -6,6 +6,7 @@ import {
   Divider,
   IconButton,
   Typography,
+  TextField
 } from '@mui/material';
 
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
@@ -20,6 +21,12 @@ interface DocumentViewerProps {
   fileSize: number;
 }
 
+interface PageComment {
+  id: string;
+  pageNumber: number;
+  text: string;
+  createdAt: string;
+}
 
 const DocumentViewer = ({
   documentId,
@@ -29,6 +36,9 @@ const DocumentViewer = ({
 }: DocumentViewerProps) => {
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [comments, setComments] = useState<PageComment[]>([]);
+  const [commentText, setCommentText] = useState('');
 
   const [isLoadingPage, setIsLoadingPage] = useState(false);
 
@@ -71,18 +81,18 @@ const DocumentViewer = ({
   };
 
     const handlePreviousPage = () => {
-    if (currentPage > 1 && !isLoadingPage) {
-        loadPage(currentPage - 1);
-    }
+        if (currentPage > 1 && !isLoadingPage) {
+            loadPage(currentPage - 1);
+        }
     };
 
     const handleNextPage = () => {
-    if (
-        currentPage < pageCount &&
-        !isLoadingPage
-    ) {
-        loadPage(currentPage + 1);
-    }
+        if (
+            currentPage < pageCount &&
+            !isLoadingPage
+        ) {
+            loadPage(currentPage + 1);
+        }
     };
 
   const handleZoomOut = () => {
@@ -136,6 +146,32 @@ const DocumentViewer = ({
         setOperation(null);
     }
     };
+
+    const handleAddComment = () => {
+        const text = commentText.trim();
+
+        if (!text) {
+            return;
+        }
+
+        const newComment: PageComment = {
+            id: crypto.randomUUID(),
+            pageNumber: currentPage,
+            text,
+            createdAt: new Date().toISOString(),
+        };
+
+        setComments((previousComments) => [
+            ...previousComments,
+            newComment,
+        ]);
+
+        setCommentText('');
+    };
+
+    const currentPageComments = comments.filter(
+        (comment) => comment.pageNumber === currentPage,
+    );
 
   return (
     <Box
@@ -400,6 +436,69 @@ const DocumentViewer = ({
         )}
         </Box>
       </Box>
+
+      <Box
+  sx={{
+    borderTop: '1px solid #ddd',
+    p: 2,
+  }}
+>
+  <Typography variant="h6">
+    Page Comments
+  </Typography>
+
+  <TextField
+    fullWidth
+    multiline
+    minRows={2}
+    placeholder="Add a comment for this page..."
+    value={commentText}
+    onChange={(event) =>
+      setCommentText(event.target.value)
+    }
+    sx={{ mt: 1 }}
+  />
+
+  <Button
+    variant="contained"
+    sx={{ mt: 1 }}
+    onClick={handleAddComment}
+    disabled={!commentText.trim()}
+  >
+    Add Comment
+  </Button>
+
+    <Box sx={{ mt: 2 }}>
+        {currentPageComments.length === 0 ? (
+        <Typography color="text.secondary">
+            No comments for this page.
+        </Typography>
+        ) : (
+        currentPageComments.map((comment) => (
+            <Box
+            key={comment.id}
+            sx={{
+                mb: 1,
+                p: 1.5,
+                border: '1px solid #ddd',
+                borderRadius: 1,
+            }}
+            >
+            <Typography>
+                {comment.text}
+            </Typography>
+
+            <Typography
+                variant="caption"
+                color="text.secondary"
+            >
+                Page {comment.pageNumber}
+            </Typography>
+            </Box>
+        ))
+        )}
+    </Box>
+    </Box>
 
       {/* Bottom navigation */}
       <Box

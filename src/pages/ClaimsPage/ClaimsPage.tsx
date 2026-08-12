@@ -24,6 +24,10 @@ import { useGetClaimsQuery } from '../../state/server/endpoints/claimsApi';
 import type { ClaimStatus } from '../../features/claims/claim.types';
 import ClaimRowActions from '../../components/claims/ClaimRowActions';
 
+import type { User } from '../../features/auth/types';
+
+import { regularUser } from '../../features/auth/mockUsers';
+
 const ClaimNumberCell = ({
   claimId,
   claimNumber,
@@ -103,6 +107,11 @@ const columns: GridColDef[] = [
 ];
 
 const ClaimsPage = () => {
+
+  const storedUser = sessionStorage.getItem('caseflow-user');
+
+  const currentUser: User = storedUser ? JSON.parse(storedUser) : regularUser;
+
   // User-entered search value
   const [search, setSearch] = useState('');
 

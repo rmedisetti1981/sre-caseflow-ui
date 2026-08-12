@@ -1,17 +1,18 @@
 import { useState } from 'react';
 
 import {
+  Alert,
+  Box,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Button,
-  TextField,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
-  Box,
+  Select,
+  TextField,
 } from '@mui/material';
 
 import EditIcon from '@mui/icons-material/Edit';
@@ -48,6 +49,8 @@ const ClaimRowActions = ({
   const [assignOpen, setAssignOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState('');
+
   const [customerName, setCustomerName] =
     useState(claim.customerName);
 
@@ -78,36 +81,77 @@ const ClaimRowActions = ({
     },
   ] = useDeleteClaimMutation();
 
-  const handleEdit = async () => {
-    await updateClaim({
-      id: claim.id,
-      data: {
-        customerName,
-        status: claimStatus,
-      },
-    }).unwrap();
+    const handleEdit = async () => {
+    setErrorMessage('');
 
-    setEditOpen(false);
-  };
+    try {
+        await updateClaim({
+        id: claim.id,
+        data: {
+            customerName,
+            status: claimStatus,
+        },
+        }).unwrap();
 
-  const handleAssign = async () => {
+        setEditOpen(false);
+    } catch (error) {
+        console.error(
+        'Failed to update claim:',
+        error,
+        );
+
+        setErrorMessage(
+        'Unable to update the claim. Please try again.',
+        );
+    }
+    };
+
+    const handleAssign = async () => {
     if (!assignedTo) {
-      return;
+        return;
     }
 
-    await assignClaim({
-      id: claim.id,
-      assignedTo,
-    }).unwrap();
+    setErrorMessage('');
 
-    setAssignOpen(false);
-  };
+    try {
+        await assignClaim({
+        id: claim.id,
+        assignedTo,
+        }).unwrap();
 
-  const handleDelete = async () => {
-    await deleteClaim(claim.id).unwrap();
+        setAssignOpen(false);
+    } catch (error) {
+        console.error(
+        'Failed to assign claim:',
+        error,
+        );
 
-    setDeleteOpen(false);
-  };
+        setErrorMessage(
+        'Unable to assign the claim. Please try again.',
+        );
+    }
+    };
+
+    const handleDelete = async () => {
+    setErrorMessage('');
+
+    try {
+        await deleteClaim(
+        claim.id,
+        ).unwrap();
+
+        setDeleteOpen(false);
+    } catch (error) {
+        console.error(
+        'Failed to delete claim:',
+        error,
+        );
+
+        setErrorMessage(
+        'Unable to delete the claim. Please try again.',
+        );
+    }
+    };
 
   return (
     <>
@@ -122,6 +166,7 @@ const ClaimRowActions = ({
           size="small"
           title="Edit claim"
           onClick={() => {
+            setErrorMessage('');
             setCustomerName(claim.customerName);
             setClaimStatus(claim.status);
             setEditOpen(true);
@@ -134,6 +179,7 @@ const ClaimRowActions = ({
           size="small"
           title="Assign claim"
           onClick={() => {
+            setErrorMessage('');
             setAssignedTo(
               claim.assignedTo ?? '',
             );
@@ -148,6 +194,7 @@ const ClaimRowActions = ({
           color="error"
           title="Delete claim"
           onClick={() => {
+            setErrorMessage('');
             setDeleteOpen(true);
           }}
         >
@@ -171,6 +218,12 @@ const ClaimRowActions = ({
         </DialogTitle>
 
         <DialogContent>
+            {errorMessage && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+            </Alert>
+            )}
+
           <Box
             sx={{
               display: 'flex',
@@ -276,6 +329,11 @@ const ClaimRowActions = ({
         </DialogTitle>
 
         <DialogContent>
+            {errorMessage && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+            </Alert>
+            )}
           <FormControl
             fullWidth
             sx={{ mt: 1 }}
@@ -346,6 +404,11 @@ const ClaimRowActions = ({
         </DialogTitle>
 
         <DialogContent>
+            {errorMessage && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+            </Alert>
+            )}
           Are you sure you want to delete claim{' '}
           <strong>
             {claim.claimNumber}

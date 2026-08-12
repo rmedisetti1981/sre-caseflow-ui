@@ -15,6 +15,8 @@ import DocumentList from '../../components/documents/DocumentList';
 
 import type { ClaimDocument } from '../../features/documents/document.types';
 
+import DocumentViewer from '../../components/documents/DocumentViewer';
+
 const ClaimWorkspacePage = () => {
   const navigate = useNavigate();
 
@@ -127,48 +129,15 @@ const ClaimWorkspacePage = () => {
             p: 3,
           }}
         >
-          {selectedDocument ? (
-            <Box
-              sx={{
-                textAlign: 'center',
-              }}
-            >
-              <Typography variant="h5">
-                {selectedDocument.fileName}
-              </Typography>
-
-              <Typography
-                color="text.secondary"
-                sx={{ mt: 1 }}
-              >
-                {selectedDocument.pageCount} pages
-              </Typography>
-
-              <Typography
-                color="text.secondary"
-              >
-                Document size:{' '}
-                {(
-                  selectedDocument.fileSize /
-                  (1024 * 1024)
-                ).toFixed(0)}{' '}
-                MB
-              </Typography>
-
-              <Typography
-                sx={{
-                  mt: 3,
-                }}
-              >
-                Document viewer will be
-                implemented in the next step.
-              </Typography>
-            </Box>
-          ) : (
-            <Typography color="text.secondary">
-              Select a document to view it.
-            </Typography>
-          )}
+        {selectedDocument ? (
+          <DocumentViewer
+            documentId={selectedDocument.id}
+          />
+        ) : (
+          <Typography color="text.secondary">
+            Select a document to view it.
+          </Typography>
+        )}
         </Paper>
       </Box>
     </Box>

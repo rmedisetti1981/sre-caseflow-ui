@@ -246,27 +246,38 @@ const ClaimsPage = () => {
         }}
       >
         <DataGrid
-          rows={data?.data ?? []}
-          columns={columns}
-          rowCount={data?.total ?? 0}
-          loading={isLoading || isFetching}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={
-            setPaginationModel
-          }
-          sortModel={sortModel}
-          onSortModelChange={
-            setSortModel
-          }
-          pageSizeOptions={[
-            25,
-            50,
-            100,
-          ]}
-          disableRowSelectionOnClick
+        rows={data?.data ?? []}
+        columns={columns}
+        rowCount={data?.total ?? 0}
+        loading={isLoading || isFetching}
+        pagination
+        paginationMode="server"
+        sortingMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={(newModel) => {
+            setPaginationModel((previous) => {
+            const pageSizeChanged =
+                previous.pageSize !== newModel.pageSize;
+
+            return {
+                ...newModel,
+                page: pageSizeChanged
+                ? 0
+                : newModel.page,
+            };
+            });
+        }}
+        sortModel={sortModel}
+        onSortModelChange={(newSortModel) => {
+            setSortModel(newSortModel);
+
+            setPaginationModel((previous) => ({
+                ...previous,
+                page: 0,
+            }));
+        }}
+        pageSizeOptions={[25, 50, 100]}
+        disableRowSelectionOnClick
         />
       </Box>
     </Box>

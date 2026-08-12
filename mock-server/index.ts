@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 
 import { claims } from './data/claims';
+import { documents } from './data/documents';
+
+import type { ClaimStatus } from '../src/features/claims/claim.types';
 
 const app = express();
 
@@ -269,6 +272,19 @@ app.delete('/api/claims/:id', (req, res) => {
   claims.splice(claimIndex, 1);
 
   return res.status(204).send();
+});
+
+app.get('/api/claims/:claimId/documents', (req, res) => {
+  const { claimId } = req.params;
+
+  const claimDocuments = documents.filter(
+    (document) => document.claimId === claimId,
+  );
+
+  return res.json({
+    data: claimDocuments,
+    total: claimDocuments.length,
+  });
 });
 
 app.listen(PORT, () => {

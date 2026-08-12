@@ -73,7 +73,7 @@ const RoleSelectionPage = () => {
           />
 
           <Typography variant="h5">
-            User
+           Regular User
           </Typography>
 
           <Typography

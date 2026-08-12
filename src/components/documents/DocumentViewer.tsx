@@ -14,11 +14,16 @@ import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
+import type { User } from '../../features/auth/types';
+
+import { hasPermission } from '../../features/auth/permissions';
+
 interface DocumentViewerProps {
   documentId: string;
   fileName: string;
   pageCount: number;
   fileSize: number;
+  user: User;
 }
 
 interface PageComment {
@@ -44,7 +49,38 @@ const DocumentViewer = ({
   fileName,
   pageCount,
   fileSize,
+  user,
 }: DocumentViewerProps) => {
+
+  const canEdit = hasPermission(
+    user,
+    'DOCUMENT_EDIT',
+  );
+
+  const canDelete = hasPermission(
+    user,
+    'DOCUMENT_DELETE',
+  );
+
+  const canSplit = hasPermission(
+    user,
+    'DOCUMENT_SPLIT',
+  );
+
+  const canMerge = hasPermission(
+    user,
+    'DOCUMENT_MERGE',
+  );
+
+  const canComment = hasPermission(
+    user,
+    'DOCUMENT_COMMENT',
+  );
+
+  const canAnnotate = hasPermission(
+    user,
+    'DOCUMENT_ANNOTATE',
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -310,50 +346,58 @@ const DocumentViewer = ({
             gap: 1,
         }}
         >
-        <Button
-            size="small"
-            variant="outlined"
-            disabled={operation !== null}
-            onClick={() =>
-            handleOperation('EDIT')
-            }
-        >
-            Edit
-        </Button>
+          {canEdit && (
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={operation !== null}
+              onClick={() =>
+                handleOperation('EDIT')
+              }
+            >
+              Edit
+            </Button>
+          )}
 
-        <Button
-            size="small"
-            variant="outlined"
-            disabled={operation !== null}
-            onClick={() =>
-            handleOperation('SPLIT')
-            }
-        >
-            Split
-        </Button>
+          {canSplit && (
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={operation !== null}
+              onClick={() =>
+                handleOperation('SPLIT')
+              }
+            >
+              Split
+            </Button>
+          )}
 
-        <Button
-            size="small"
-            variant="outlined"
-            disabled={operation !== null}
-            onClick={() =>
-            handleOperation('MERGE')
-            }
-        >
-            Merge
-        </Button>
+          {canMerge && (
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={operation !== null}
+              onClick={() =>
+                handleOperation('MERGE')
+              }
+            >
+              Merge
+            </Button>
+          )}
 
-        <Button
-            size="small"
-            color="error"
-            variant="outlined"
-            disabled={operation !== null}
-            onClick={() =>
-            handleOperation('DELETE')
-            }
-        >
-            Delete
-        </Button>
+          {canDelete && (
+            <Button
+              size="small"
+              color="error"
+              variant="outlined"
+              disabled={operation !== null}
+              onClick={() =>
+                handleOperation('DELETE')
+              }
+            >
+              Delete
+            </Button>
+          )}
         </Box>
 
 
@@ -391,19 +435,23 @@ const DocumentViewer = ({
           </IconButton>
         </Box>
 
-        <Button
-          variant={
-            isAnnotationMode
-              ? 'contained'
-              : 'outlined'
-          }
-          onClick={() => {
-            setAnnotationText('');
-            setIsAnnotationMode((previous) => !previous);
-          }}
-        >
-          {isAnnotationMode ? 'Close Annotation' : 'Annotate'}
-        </Button>
+        {canAnnotate && (
+          <Button
+            variant={
+              isAnnotationMode
+                ? 'contained'
+                : 'outlined'
+            }
+            onClick={() => {
+              setAnnotationText('');
+              setIsAnnotationMode((previous) => !previous);
+            }}
+          >
+            {isAnnotationMode
+              ? 'Close Annotation'
+              : 'Annotate'}
+          </Button>
+        )}
       </Box>
 
       <Divider />
@@ -535,26 +583,30 @@ const DocumentViewer = ({
     Page Comments
   </Typography>
 
-  <TextField
-    fullWidth
-    multiline
-    minRows={2}
-    placeholder="Add a comment for this page..."
-    value={commentText}
-    onChange={(event) =>
-      setCommentText(event.target.value)
-    }
-    sx={{ mt: 1 }}
-  />
+    {canComment && (
+      <>
+        <TextField
+          fullWidth
+          multiline
+          minRows={2}
+          placeholder="Add a comment for this page..."
+          value={commentText}
+          onChange={(event) =>
+            setCommentText(event.target.value)
+          }
+          sx={{ mt: 1 }}
+        />
 
-  <Button
-    variant="contained"
-    sx={{ mt: 1 }}
-    onClick={handleAddComment}
-    disabled={!commentText.trim()}
-  >
-    Add Comment
-  </Button>
+        <Button
+          variant="contained"
+          sx={{ mt: 1 }}
+          onClick={handleAddComment}
+          disabled={!commentText.trim()}
+        >
+          Add Comment
+        </Button>
+      </>
+    )}
 
     <Box sx={{ mt: 2 }}>
         {currentPageComments.length === 0 ? (

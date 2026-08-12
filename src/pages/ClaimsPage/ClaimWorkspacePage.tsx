@@ -17,8 +17,15 @@ import type { ClaimDocument } from '../../features/documents/document.types';
 
 import DocumentViewer from '../../components/documents/DocumentViewer';
 
+import type { User } from '../../features/auth/types';
+import { regularUser } from '../../features/auth/mockUsers';
+
 const ClaimWorkspacePage = () => {
   const navigate = useNavigate();
+
+  const storedUser = sessionStorage.getItem('caseflow-user');
+
+  const currentUser: User = storedUser ? JSON.parse(storedUser) : regularUser;
 
   const { claimId } = useParams<{
     claimId: string;
@@ -135,6 +142,7 @@ const ClaimWorkspacePage = () => {
             fileName={selectedDocument.fileName}
             pageCount={selectedDocument.pageCount}
             fileSize={selectedDocument.fileSize}
+            user={currentUser}
           />
         ) : (
           <Typography color="text.secondary">

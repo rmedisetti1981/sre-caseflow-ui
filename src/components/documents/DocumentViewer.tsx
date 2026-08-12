@@ -28,6 +28,17 @@ interface PageComment {
   createdAt: string;
 }
 
+interface DocumentAnnotation {
+  id: string;
+  documentId: string;
+  pageNumber: number;
+  type: 'HIGHLIGHT' | 'NOTE';
+  text: string;
+  x: number;
+  y: number;
+  createdAt: string;
+}
+
 const DocumentViewer = ({
   documentId,
   fileName,
@@ -36,6 +47,16 @@ const DocumentViewer = ({
 }: DocumentViewerProps) => {
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [annotations, setAnnotations] = useState<
+    DocumentAnnotation[]
+    >([]);
+
+  const [annotationText, setAnnotationText] =
+  useState('');
+
+  const [isAnnotationMode, setIsAnnotationMode] =
+  useState(false);
 
   const [comments, setComments] = useState<PageComment[]>([]);
   const [commentText, setCommentText] = useState('');
@@ -173,6 +194,37 @@ const DocumentViewer = ({
         (comment) => comment.pageNumber === currentPage,
     );
 
+    const handleAddAnnotation = () => {
+        const text = annotationText.trim();
+
+        if (!text) {
+            return;
+        }
+
+        const annotation: DocumentAnnotation = {
+            id: crypto.randomUUID(),
+            documentId,
+            pageNumber: currentPage,
+            type: 'NOTE',
+            text,
+            x: 20,
+            y: 20,
+            createdAt: new Date().toISOString(),
+        };
+
+        setAnnotations((previous) => [
+            ...previous,
+            annotation,
+        ]);
+
+        setAnnotationText('');
+        setIsAnnotationMode(false);
+    };
+
+    const currentPageAnnotations = annotations.filter(
+      (annotation) =>
+        annotation.pageNumber === currentPage,
+    );
   return (
     <Box
       sx={{
@@ -338,6 +390,20 @@ const DocumentViewer = ({
             <ZoomInIcon />
           </IconButton>
         </Box>
+
+        <Button
+          variant={
+            isAnnotationMode
+              ? 'contained'
+              : 'outlined'
+          }
+          onClick={() => {
+            setAnnotationText('');
+            setIsAnnotationMode((previous) => !previous);
+          }}
+        >
+          {isAnnotationMode ? 'Close Annotation' : 'Annotate'}
+        </Button>
       </Box>
 
       <Divider />
@@ -392,6 +458,7 @@ const DocumentViewer = ({
             backgroundColor: '#fff',
             boxShadow: 2,
             p: 5,
+            position: 'relative',
             transition: 'width 0.2s ease',
           }}
         >
@@ -435,6 +502,27 @@ const DocumentViewer = ({
         </Typography>
         )}
         </Box>
+
+        {currentPageAnnotations.map((annotation) => (
+        <Box
+          key={annotation.id}
+          sx={{
+            position: 'absolute',
+            left: `${annotation.x}%`,
+            top: `${annotation.y}%`,
+            p: 1,
+            maxWidth: 220,
+            backgroundColor: '#fff3cd',
+            border: '1px solid #e0c36c',
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        >
+          <Typography variant="body2">
+            {annotation.text}
+          </Typography>
+        </Box>
+      ))}
       </Box>
 
       <Box
@@ -499,6 +587,94 @@ const DocumentViewer = ({
         )}
     </Box>
     </Box>
+
+
+    {/* Annotations */}
+    <Box
+      sx={{
+        borderTop: '1px solid #ddd',
+        p: 2,
+      }}
+    >
+      <Typography variant="h6">
+        Page Annotations
+      </Typography>
+
+      {isAnnotationMode && (
+        <Box sx={{ mt: 1 }}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={2}
+            placeholder="Add an annotation for this page..."
+            value={annotationText}
+            onChange={(event) =>
+              setAnnotationText(event.target.value)
+            }
+          />
+
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              mt: 1,
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={handleAddAnnotation}
+              disabled={!annotationText.trim()}
+            >
+              Add Annotation
+            </Button>
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setAnnotationText('');
+                setIsAnnotationMode(false);
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {!isAnnotationMode &&
+        currentPageAnnotations.length === 0 && (
+          <Typography
+            color="text.secondary"
+            sx={{ mt: 1 }}
+          >
+            No annotations for this page.
+          </Typography>
+        )}
+
+      {currentPageAnnotations.map((annotation) => (
+        <Box
+          key={annotation.id}
+          sx={{
+            mt: 1,
+            p: 1.5,
+            border: '1px solid #ddd',
+            borderRadius: 1,
+          }}
+        >
+          <Typography>
+            {annotation.text}
+          </Typography>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+          >
+            Page {annotation.pageNumber}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+
 
       {/* Bottom navigation */}
       <Box

@@ -35,6 +35,12 @@ const DocumentViewer = ({
   const [pageError, setPageError] = useState('');  
 
   const [zoom, setZoom] = useState(100);
+
+  const [operation, setOperation] = useState<
+  'EDIT' | 'SPLIT' | 'MERGE' | 'DELETE' | null
+>(null);
+
+    const [operationMessage, setOperationMessage] = useState('');
   
     const loadPage = async (page: number) => {
     setIsLoadingPage(true);
@@ -90,6 +96,46 @@ const DocumentViewer = ({
       Math.min(200, previousZoom + 10),
     );
   };
+  
+    const handleOperation = async (
+    selectedOperation:
+        | 'EDIT'
+        | 'SPLIT'
+        | 'MERGE'
+        | 'DELETE',
+    ) => {
+    setOperation(selectedOperation);
+    setOperationMessage('');
+
+    try {
+        // Simulate a long-running backend operation.
+        //
+        // Production:
+        // POST /documents/{documentId}/operations
+        //
+        // The backend would return an operation/job ID
+        // and process the document asynchronously.
+
+        await new Promise((resolve) =>
+        setTimeout(resolve, 1000),
+        );
+
+        setOperationMessage(
+        `${selectedOperation} operation completed successfully.`,
+        );
+    } catch (error) {
+        console.error(
+        `Failed to execute ${selectedOperation}:`,
+        error,
+        );
+
+        setOperationMessage(
+        `Unable to complete ${selectedOperation.toLowerCase()} operation. Please try again.`,
+        );
+    } finally {
+        setOperation(null);
+    }
+    };
 
   return (
     <Box
@@ -168,6 +214,61 @@ const DocumentViewer = ({
           </IconButton>
         </Box>
 
+        {/* Document operations */}
+        <Box
+        sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+        }}
+        >
+        <Button
+            size="small"
+            variant="outlined"
+            disabled={operation !== null}
+            onClick={() =>
+            handleOperation('EDIT')
+            }
+        >
+            Edit
+        </Button>
+
+        <Button
+            size="small"
+            variant="outlined"
+            disabled={operation !== null}
+            onClick={() =>
+            handleOperation('SPLIT')
+            }
+        >
+            Split
+        </Button>
+
+        <Button
+            size="small"
+            variant="outlined"
+            disabled={operation !== null}
+            onClick={() =>
+            handleOperation('MERGE')
+            }
+        >
+            Merge
+        </Button>
+
+        <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            disabled={operation !== null}
+            onClick={() =>
+            handleOperation('DELETE')
+            }
+        >
+            Delete
+        </Button>
+        </Box>
+
+
         {/* Zoom controls */}
         <Box
           sx={{
@@ -204,6 +305,36 @@ const DocumentViewer = ({
       </Box>
 
       <Divider />
+
+        {operation && (
+        <Box
+            sx={{
+            px: 2,
+            py: 1,
+            backgroundColor: '#fff3cd',
+            }}
+        >
+            <Typography variant="body2">
+            Processing {operation.toLowerCase()} operation...
+            </Typography>
+        </Box>
+        )}
+
+        {operationMessage && (
+        <Box
+            sx={{
+            px: 2,
+            py: 1,
+            }}
+        >
+            <Typography
+            variant="body2"
+            color="text.secondary"
+            >
+            {operationMessage}
+            </Typography>
+        </Box>
+        )}
 
       {/* Document content area */}
       <Box

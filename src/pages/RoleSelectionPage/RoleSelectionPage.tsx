@@ -5,6 +5,11 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import { useNavigate } from 'react-router-dom';
 
+import {
+  regularUser,
+  adminUser,
+} from '../../features/auth/mockUsers';
+
 const RoleSelectionPage = () => {
   const navigate = useNavigate();
 
@@ -86,7 +91,14 @@ const RoleSelectionPage = () => {
             variant="contained"
             fullWidth
             sx={{ mt: 3 }}
-            onClick={() => navigate('/claims')}
+            onClick={() => {
+              sessionStorage.setItem(
+                'caseflow-user',
+                JSON.stringify(regularUser),
+              );
+
+              navigate('/claims');
+            }}
           >
             Continue as User
           </Button>
@@ -127,7 +139,14 @@ const RoleSelectionPage = () => {
             variant="contained"
             fullWidth
             sx={{ mt: 3 }}
-            onClick={() => navigate('/claims')}
+            onClick={() => {
+              sessionStorage.setItem(
+                'caseflow-user',
+                JSON.stringify(adminUser),
+              );
+
+              navigate('/claims');
+            }}
           >
             Continue as Admin
           </Button>

@@ -1,19 +1,38 @@
-import { useAppSelector } from './state/client/hooks';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from 'react-router-dom';
+
+import ClaimsPage from './pages/ClaimsPage/ClaimsPage';
+import ClaimWorkspacePage from './pages/ClaimsPage/ClaimWorkspacePage';
 
 function App() {
-  const isAuthenticated = useAppSelector(
-    (state) => state.auth.isAuthenticated
-  );
-
   return (
-    <div>
-      <h1>CaseFlow</h1>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to="/claims"
+              replace
+            />
+          }
+        />
 
-      <p>
-        Authenticated:{' '}
-        {isAuthenticated ? 'Yes' : 'No'}
-      </p>
-    </div>
+        <Route
+          path="/claims"
+          element={<ClaimsPage />}
+        />
+
+        <Route
+          path="/claims/:claimId"
+          element={<ClaimWorkspacePage />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

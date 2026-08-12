@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import {
   DataGrid,
   type GridColDef,
@@ -9,6 +11,7 @@ import {
 
 import {
   Box,
+  Button,
   FormControl,
   InputLabel,
   MenuItem,
@@ -21,12 +24,37 @@ import { useGetClaimsQuery } from '../../state/server/endpoints/claimsApi';
 import type { ClaimStatus } from '../../features/claims/claim.types';
 import ClaimRowActions from '../../components/claims/ClaimRowActions';
 
+const ClaimNumberCell = ({
+  claimId,
+  claimNumber,
+}: {
+  claimId: string;
+  claimNumber: string;
+}) => {
+  const navigate = useNavigate();
+
+  return (
+    <Button
+      variant="text"
+      onClick={() => navigate(`/claims/${claimId}`)}
+    >
+      {claimNumber}
+    </Button>
+  );
+};
+
 const columns: GridColDef[] = [
   {
     field: 'claimNumber',
     headerName: 'Claim Number',
     flex: 1,
     minWidth: 150,
+    renderCell: (params) => (
+      <ClaimNumberCell
+        claimId={params.row.id}
+        claimNumber={params.row.claimNumber}
+      />
+    ),
   },
   {
     field: 'customerName',

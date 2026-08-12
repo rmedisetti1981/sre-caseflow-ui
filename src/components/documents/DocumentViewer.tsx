@@ -110,31 +110,39 @@ const DocumentViewer = ({
     const [operationMessage, setOperationMessage] = useState('');
   
     const loadPage = async (page: number) => {
-    setIsLoadingPage(true);
-    setPageError('');
+      setIsLoadingPage(true);
+      setPageError('');
 
-    try {
-      // Simulate an API request for a single page.
-      // In production this would call:
-      // GET /documents/{documentId}/pages/{page}
+      try {
+        // Production architecture:
+        //
+        // GET /documents/{documentId}/pages/{page}
+        //
+        // The backend/storage layer should support:
+        // - streaming
+        // - HTTP range requests
+        // - page-level retrieval
+        //
+        // The frontend can prefetch the next page
+        // without loading the complete document.
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 500),
-      );
+        await new Promise((resolve) =>
+          setTimeout(resolve, 500),
+        );
 
-      setCurrentPage(page);
-    } catch (error) {
-      console.error(
-        'Failed to load document page:',
-        error,
-      );
+        setCurrentPage(page);
+      } catch (error) {
+        console.error(
+          'Failed to load document page:',
+          error,
+        );
 
-      setPageError(
-        'Unable to load this page. Please try again.',
-      );
-    } finally {
-      setIsLoadingPage(false);
-    }
+        setPageError(
+          'Unable to load this page. Please try again.',
+        );
+      } finally {
+        setIsLoadingPage(false);
+      }
   };
 
     const handlePreviousPage = () => {
@@ -261,6 +269,9 @@ const DocumentViewer = ({
       (annotation) =>
         annotation.pageNumber === currentPage,
     );
+
+    const isLargeDocument =
+  fileSize >= 500 * 1024 * 1024;
   return (
     <Box
       sx={{
@@ -456,6 +467,22 @@ const DocumentViewer = ({
 
       <Divider />
 
+        {isLargeDocument && (
+          <Box
+            sx={{
+              px: 2,
+              py: 1,
+              backgroundColor: '#fff3cd',
+              borderBottom: '1px solid #ddd',
+            }}
+          >
+            <Typography variant="body2">
+              Large document detected. Pages are loaded
+              on demand to minimize browser memory usage.
+            </Typography>
+          </Box>
+        )}
+
         {operation && (
         <Box
             sx={{
@@ -525,11 +552,56 @@ const DocumentViewer = ({
             Page {currentPage}
           </Typography>
 
-        {isLoadingPage ? (
-        <Typography color="text.secondary">
-            Loading page {currentPage}...
-        </Typography>
-        ) : pageError ? (
+          {isLoadingPage ? (
+            <Box
+              sx={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 2,
+                py: 6,
+              }}
+            >
+              <Typography color="text.secondary">
+                Loading page ...
+              </Typography>
+
+              <Box
+                sx={{
+                  width: '60%',
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: '#e0e0e0',
+                  overflow: 'hidden',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: '60%',
+                    height: '100%',
+                    backgroundColor: '#1976d2',
+                    animation: 'documentLoading 1.2s ease-in-out infinite',
+                    '@keyframes documentLoading': {
+                      '0%': {
+                        transform: 'translateX(-100%)',
+                      },
+                      '100%': {
+                        transform: 'translateX(170%)',
+                      },
+                    },
+                  }}
+                />
+              </Box>
+
+              <Typography
+                variant="caption"
+                color="text.secondary"
+              >
+                Loading only the requested page
+              </Typography>
+            </Box>
+          ) : pageError ? (
         <Box sx={{ textAlign: 'center' }}>
             <Typography color="error">
             {pageError}

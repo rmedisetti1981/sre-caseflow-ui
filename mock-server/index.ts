@@ -20,12 +20,20 @@ app.get('/api/claims', (req, res) => {
   const page = Number(req.query.page) || 1;
   const pageSize = Number(req.query.pageSize) || 100;
 
+  const search = String(req.query.search || '').trim();
+
+  const status = req.query.status
+    ? String(req.query.status)
+    : '';
+
   const sortField = String(
     req.query.sortField || 'createdDate',
   );
 
   const sortDirection =
-    req.query.sortDirection === 'asc' ? 'asc' : 'desc';
+    req.query.sortDirection === 'asc'
+      ? 'asc'
+      : 'desc';
 
   const sortableFields = [
     'claimNumber',
@@ -46,57 +54,103 @@ app.get('/api/claims', (req, res) => {
     });
   }
 
-  const sortedClaims = [...claims].sort((a, b) => {
-    const aValue = a[
-      sortField as keyof typeof a
-    ];
+  const validStatuses = [
+    'OPEN',
+    'IN_REVIEW',
+    'APPROVED',
+    'REJECTED',
+    'CLOSED',
+  ];
 
-    const bValue = b[
-      sortField as keyof typeof b
-    ];
+  if (
+    status &&
+    !validStatuses.includes(status)
+  ) {
+    return res.status(400).json({
+      message: `Invalid status: ${status}`,
+    });
+  }
 
-    if (aValue === bValue) {
-      return 0;
-    }
+  const filteredClaims = claims.filter((claim) => {
+    const matchesSearch =
+      !search ||
+      claim.claimNumber
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      claim.customerName
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      (claim.assignedTo ?? '')
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    if (aValue == null) {
-      return 1;
-    }
+    const matchesStatus =
+      !status || claim.status === status;
 
-    if (bValue == null) {
-      return -1;
-    }
-
-    const comparison =
-      String(aValue).localeCompare(
-        String(bValue),
-        undefined,
-        {
-          numeric: true,
-          sensitivity: 'base',
-        },
-      );
-
-    return sortDirection === 'asc'
-      ? comparison
-      : -comparison;
+    return matchesSearch && matchesStatus;
   });
 
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
+  const sortedClaims = [...filteredClaims].sort(
+    (a, b) => {
+      const aValue =
+        a[sortField as keyof typeof a];
 
-  const paginatedClaims = sortedClaims.slice(
-    startIndex,
-    endIndex,
+      const bValue =
+        b[sortField as keyof typeof b];
+
+      if (aValue === bValue) {
+        return 0;
+      }
+
+      if (aValue == null) {
+        return 1;
+      }
+
+      if (bValue == null) {
+        return -1;
+      }
+
+      const comparison =
+        String(aValue).localeCompare(
+          String(bValue),
+          undefined,
+          {
+            numeric: true,
+            sensitivity: 'base',
+          },
+        );
+
+      return sortDirection === 'asc'
+        ? comparison
+        : -comparison;
+    },
   );
+
+  const total = sortedClaims.length;
+
+  const startIndex =
+    (page - 1) * pageSize;
+
+  const endIndex =
+    startIndex + pageSize;
+
+  const paginatedClaims =
+    sortedClaims.slice(
+      startIndex,
+      endIndex,
+    );
 
   return res.json({
     data: paginatedClaims,
-    total: claims.length,
+    total,
     page,
     pageSize,
     sortField,
     sortDirection,
+    filters: {
+      search,
+      status: status || null,
+    },
   });
 });
 

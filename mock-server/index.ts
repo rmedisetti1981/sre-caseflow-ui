@@ -16,10 +16,23 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-app.get('/api/claims', (_req, res) => {
+app.get('/api/claims', (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const pageSize = Number(req.query.pageSize) || 100;
+
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const paginatedClaims = claims.slice(
+    startIndex,
+    endIndex,
+  );
+
   res.json({
-    data: claims,
+    data: paginatedClaims,
     total: claims.length,
+    page,
+    pageSize,
   });
 });
 

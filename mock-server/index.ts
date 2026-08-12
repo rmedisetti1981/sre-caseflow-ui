@@ -154,6 +154,123 @@ app.get('/api/claims', (req, res) => {
   });
 });
 
+// Get a single claim
+app.get('/api/claims/:id', (req, res) => {
+  const claim = claims.find(
+    (item) => item.id === req.params.id,
+  );
+
+  if (!claim) {
+    return res.status(404).json({
+      message: 'Claim not found',
+    });
+  }
+
+  return res.json(claim);
+});
+
+
+// Update claim
+app.put('/api/claims/:id', (req, res) => {
+  const claim = claims.find(
+    (item) => item.id === req.params.id,
+  );
+
+  if (!claim) {
+    return res.status(404).json({
+      message: 'Claim not found',
+    });
+  }
+
+  const {
+    customerName,
+    status,
+  } = req.body;
+
+  const validStatuses: ClaimStatus[] = [
+    'OPEN',
+    'IN_REVIEW',
+    'APPROVED',
+    'REJECTED',
+    'CLOSED',
+  ];
+
+  if (
+    status !== undefined &&
+    !validStatuses.includes(status)
+  ) {
+    return res.status(400).json({
+      message: `Invalid status: ${status}`,
+    });
+  }
+
+  if (
+    customerName !== undefined &&
+    typeof customerName !== 'string'
+  ) {
+    return res.status(400).json({
+      message: 'customerName must be a string',
+    });
+  }
+
+  if (customerName !== undefined) {
+    claim.customerName = customerName.trim();
+  }
+
+  if (status !== undefined) {
+    claim.status = status;
+  }
+
+  return res.json(claim);
+});
+
+
+// Assign claim
+app.post('/api/claims/:id/assign', (req, res) => {
+  const claim = claims.find(
+    (item) => item.id === req.params.id,
+  );
+
+  if (!claim) {
+    return res.status(404).json({
+      message: 'Claim not found',
+    });
+  }
+
+  const { assignedTo } = req.body;
+
+  if (
+    !assignedTo ||
+    typeof assignedTo !== 'string'
+  ) {
+    return res.status(400).json({
+      message: 'assignedTo is required',
+    });
+  }
+
+  claim.assignedTo = assignedTo;
+
+  return res.json(claim);
+});
+
+
+// Delete claim
+app.delete('/api/claims/:id', (req, res) => {
+  const claimIndex = claims.findIndex(
+    (item) => item.id === req.params.id,
+  );
+
+  if (claimIndex === -1) {
+    return res.status(404).json({
+      message: 'Claim not found',
+    });
+  }
+
+  claims.splice(claimIndex, 1);
+
+  return res.status(204).send();
+});
+
 app.listen(PORT, () => {
   console.log(
     `CaseFlow Mock API running on http://localhost:${PORT}`,
